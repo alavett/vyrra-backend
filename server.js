@@ -192,11 +192,11 @@ app.post('/webhook', async (req, res) => {
         console.log(`✅ Trial started for user ${userId}`);
         break;
       }
-      
+
       case 'customer.subscription.created': {
         const sub = event.data.object;
         const userId = await getUserIdByCustomer(sub.customer);
-        if (!userId) break;
+        if (!userId) break;``
       
         await supabase.from('subscriptions').upsert({
           user_id: userId,
