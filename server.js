@@ -192,7 +192,24 @@ app.post('/webhook', async (req, res) => {
         console.log(`✅ Trial started for user ${userId}`);
         break;
       }
-
+      
+      case 'customer.subscription.created': {
+        const sub = event.data.object;
+        const userId = await getUserIdByCustomer(sub.customer);
+        if (!userId) break;
+      
+        await supabase.from('subscriptions').upsert({
+          user_id: userId,
+          stripe_customer_id: sub.customer,
+          stripe_subscription_id: sub.id,
+          status: sub.status,
+          trial_end: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
+          current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+        }, { onConflict: 'user_id' });
+      
+        console.log(`✅ Subscription created for user ${userId}`);
+        break;
+      }
       // Status changed (trial → active, payment failed, etc.)
       case 'customer.subscription.updated': {
         const sub = event.data.object;
